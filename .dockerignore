@@ -1,0 +1,7 @@
+# 環境変数設定ファイルの無視
+/.env
+# マスターキーの無視
+/config/master.key
+# share配下の無視
+/share/*
+!/share/.keep

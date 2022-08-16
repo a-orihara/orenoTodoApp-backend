@@ -1,0 +1,84 @@
+version: '3.9'
+services:
+  db:
+    # 使用するimage
+    image: mysql:8.0
+    container_name: mysql_db
+    # command:起動時の既定のコマンドを上書きする(docker-composeで指定するcommandはDockerfileよりも優先される)
+    # mysql:8.0で外部のソフトウェアからmysqlへ接続する認証方式が変わり、セキュリティが強化された。
+    # 対応していないソフトウェアが多い為、認証方式を古いものに変更する
+    command: --default-authentication-plugin=mysql_native_password
+    # ボリュームとは記憶領域の事。ホストの記憶領域にコンテナをマウントする。
+    # ただし、マウントは記憶領域以外にディレクトリやファイル、メモリの場合もある
+    volumes:
+    # ymlファイルはリストの場合は-を付けて記載する.
+    # ホストの./db/mysql_dataにdockerコンテキスト内の/var/lib/mysqlとマウント。
+    # コンテナを削除すると、その中にあるDBのデータも一緒に消える為、これをしないと毎回データを入れ直さないといけない。
+    # だからDBをローカルにマウントしておく
+      - db-data:/var/lib/mysql
+    # 環境変数の設定。
+    # 外部ファイルから複数の環境変数をサービスコンテナー受け渡すには env_fileオプションを利用。
+    # 環境変数はコンテナ間で使う。環境変数については後段の2を参照
+    env_file:
+      - ./.env
+    # environment:
+    #   MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    # ローカル3308とコンテナ3306を接続
+    ports:
+      - '3308:3306'
+
+# =   =   =   =   =   =   =   =   =   =   =   =   =   =   =   =   =   =   =   =   =   =   =   =   =
+  
+  rails_app:
+    # docker buildの内容。docker .:dockerコンテキスト内でビルド(docker fileからイメージを作成)
+    #  docker composeと同じディレクトリにあるDockerfileをビルド
+    build: .
+    # imageとbuildが同時に宣言されている場合は, ビルドが優先的に実行されて,
+    # imageはその構成に使われる(imageによるプルは発生しない).
+    image: rails_img
+    container_name: rails_app_ctr
+    # 外部ファイル：ローカルのビルドコンテキストの./environments/db.envを参照
+    env_file:
+      - ./.env
+    # デフォルトの設定(config/puma.rb)でpumaが起動。オプション-C: 設定ファイル読み込み
+    # puma.sockを配置するディレクトリを作成
+    # tmpディレクトリは一時的に使うファイルやディレクトリを保存するディレクトリ
+    # tmpディレクトリの中にあるファイルやディレクトリはパソコンを再起動すると消える
+    # /myapp/tmp/socketsディレクトリの作成
+    # -p:復数階層のディレクトリを1回で作成
+    # productionモードではディレクトリ内にconfig/master.keyとconfig/credentials.ymlというファイルが必要。
+    command: bash -c "rm -f tmp/pids/server.pid && mkdir -p tmp/sockets && bundle exec puma -C config/puma.rb"
+    # command: bash -c "rm -f tmp/pids/server.pid && mkdir -p tmp/sockets && mkdir -p tmp/pids && bundle exec puma -C config/puma.rb -e production"
+    # ホストのカレントディレクトリにコンテナのルート直下のrails_appディレクトリをマウント
+    # ホストで同期したappファイルが変更されると,コンテナのrails_appディレクトリも自動的に変更される。
+    # 誰がどのPCのどのディレクトリで起動してもいいように、カレントディレクトリを指定
+    # これはバインドマウント：ホストの既存のディレクトリやファイルを使用
+    # 頻繁に書き換えるファイルはバインドマウントの方がいい。
+    volumes:
+      - .:/rails_app
+      - public-data:/rails_app/public
+      - tmp-data:/rails_app/tmp
+      - log-data:/rails_app/log
+    # 依存関係を示していて、起動順を指定できます。ここではdb→rails_appへと起動します。DBを先に作成する必要がある為
+    # railsはDBと接続する際は、DBのIPアドレスを指定する為先に作る。そしてこれで接続先をdbと記載するだけで良くなる
+    depends_on:
+      - db
+    # ローカル3000とコンテナ3000を接続
+    ports:
+      - "3001:3000"
+    # -itのt=tty
+    tty: true
+    # -itのiの設定。stdin=標準入力をオープン。
+    stdin_open: true
+  
+
+  # 記憶領域のマウントを設定
+  # ここで定義したvolumeはdocker-compose実行時に自動で作成されます。
+volumes:
+  public-data:
+  tmp-data:
+  log-data:
+  db-data:
+    # # このボリュームに対して、どのボリューム・ドライバを使うか指定します。
+    # # デフォルトは、Docker Engineで使用するように設定されているドライバであり、多くの場合はlocalです。
+    # driver: local
