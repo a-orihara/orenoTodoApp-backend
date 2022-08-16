@@ -1,55 +1,55 @@
-# MySQL. Versions 5.5.8 and up are supported.
-#
-# Install the MySQL driver
-#   gem install mysql2
-#
-# Ensure the MySQL gem is defined in your Gemfile
-#   gem 'mysql2'
-#
-# And be sure to use new-style password hashing:
-#   https://dev.mysql.com/doc/refman/5.7/en/password-hashing.html
-#
-default: &default
-  adapter: mysql2
-  encoding: utf8mb4
-  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  username: root
-  password:
-  host: localhost
+# Railsにおけるデータベースの設定ファイル。
+# Railsアプリケーションを作成すると自動的に生成され、デフォルトではSQLiteを使用する前提で作成されます。
+# MySQL等のSQLite以外のデータベースを使用する前提で生成する場合は、
+# アプリケーションを作成する際に明示的にオプションでデータベースを指定します。
+# $ rails new アプリケーション名 -d データベース
+# $ rails new アプリケーション名 --database=データベース
 
+# 「&」の部分はアンカーという「YAML」の記述方法。
+# 「&」に続けて「default」という名前をつけると、「default」という名前でハッシューのデータを保存することができます
+default: &default # 使用するデータベース種類
+  adapter: mysql2
+  # 文字コード
+  encoding: utf8mb4
+  # pool:「コネクションプール」。データベースへ接続した時の接続状態を保存しておく役割をします。
+  # データベースに再接続する場合、この「コネクションプール」を利用することによって接続時間を短縮する仕組み
+  # この「コネクションプール」の数が足りないとリクエストに対する待ち時間が増えてしまい、
+  # 「ActiveRecord::ConnectionTimeoutError」などが発生するんだとか。デフォルト値は５。
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  username: <%= ENV["MYSQL_ROOT_USER"] %>
+  # githubへ上げる事を想定してパスワードはなるべくなら環境変数で設定した方がいい
+  password: <%= ENV["MYSQL_ROOT_PASSWORD"] %>
+  # host: localhostからの変更
+  # データベースのアクセス先にdbを指定
+  host: db
+
+# デフォルトでは、開発環境のdbを参照する
 development:
+  # 「＊」はエイリアス。「＊」をつけることによって、アンカーの内容を呼び出します。
   <<: *default
+  # デフォルトのデータベースの命名ルールは「アプリ名_development」
+  # 「rails new」コマンドを実行した際に、自動で「database.yml」に書き加えられる
+  # 「database.yml」を編集することで接続するデータベースを変えることも可能です。
   database: rails_app_development
 
-# Warning: The database defined as "test" will be erased and
-# re-generated from your development database when you run "rake".
-# Do not set this db to the same as development or production.
+# 警告 test" として定義されたデータベースは "rake" を実行したときに消去され、開発用データベースから再作成されます。
+# このdbをdevelopmentやproductionと同じに設定しないでください。
 test:
   <<: *default
   database: rails_app_test
 
-# As with config/credentials.yml, you never want to store sensitive information,
-# like your database password, in your source code. If your source code is
-# ever seen by anyone, they now have access to your database.
-#
-# Instead, provide the password or a full connection URL as an environment
-# variable when you boot the app. For example:
-#
-#   DATABASE_URL="mysql2://myuser:mypass@localhost/somedatabase"
-#
-# If the connection URL is provided in the special DATABASE_URL environment
-# variable, Rails will automatically merge its configuration values on top of
-# the values provided in this file. Alternatively, you can specify a connection
-# URL environment variable explicitly:
-#
-#   production:
-#     url: <%= ENV['MY_APP_DATABASE_URL'] %>
-#
-# Read https://guides.rubyonrails.org/configuring.html#configuring-a-database
-# for a full overview on how database connection configuration can be specified.
-#
 production:
   <<: *default
-  database: rails_app_production
-  username: rails_app
-  password: <%= ENV['RAILS_APP_DATABASE_PASSWORD'] %>
+  database: <%= ENV['DB_DATABASE'] %>
+  adapter: mysql2
+  encoding: utf8mb4
+  charset: utf8mb4
+  collation: utf8mb4_general_ci
+  host: <%= ENV['DB_HOST'] %>
+  username: <%= ENV['DB_USERNAME'] %>
+  password: <%= ENV['DB_PASSWORD'] %>
+# production:
+#   <<: *default
+#   database: myapp_production
+#   username: myapp
+#   password: <%= ENV['MYAPP_DATABASE_PASSWORD'] %>
