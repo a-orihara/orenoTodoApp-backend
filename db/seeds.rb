@@ -5,13 +5,13 @@
 
 SAMPLE_TODOS = [
   {
-    name: 'Going around the world'
+    name: 'momoを食べる'
   },
   {
-    name: 'graduating from college'
+    name: 'kokoに行く'
   },
   {
-    name: 'publishing a book'
+    name: 'sasaに入る'
   }
 ]
 
