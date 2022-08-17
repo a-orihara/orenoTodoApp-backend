@@ -23,7 +23,8 @@ gem 'puma', '~> 5.0'
 gem 'bootsnap', '>= 1.4.4', require: false
 
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin AJAX possible
-# gem 'rack-cors'
+# <Cross-Origin Resource Sharing（CORS）の処理にRack CORSを使用し、クロスオリジンAJAXを可能にする>
+gem 'rack-cors'
 
 gem 'dotenv-rails'
 gem 'net-imap'
