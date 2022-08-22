@@ -34,6 +34,10 @@ gem 'net-smtp'
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug', platforms: %i[mri mingw x64_mingw]
+  # rspecインストール
+  gem 'rspec-rails'
+  # RSpecのテストをより高速に実行する
+  gem 'spring-commands-rspec'
 end
 
 group :development do
