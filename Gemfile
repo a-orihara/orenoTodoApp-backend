@@ -36,7 +36,7 @@ group :development, :test do
   gem 'byebug', platforms: %i[mri mingw x64_mingw]
   # rspecインストール
   gem 'rspec-rails'
-  # RSpecのテストをより高速に実行する
+  # binstubを使う。RSpecのテストをより高速に実行する
   gem 'spring-commands-rspec'
 end
 
