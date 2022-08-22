@@ -37,6 +37,8 @@ group :development, :test do
   # rspecインストール
   gem 'rspec-rails'
   # binstubを使う。RSpecのテストをより高速に実行する
+  # 以下を実行してbin/railsが使用できるように設定します
+  # bundle exec spring binstub rspec
   gem 'spring-commands-rspec'
 end
 
