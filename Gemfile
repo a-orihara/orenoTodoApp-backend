@@ -37,7 +37,13 @@ group :development, :test do
   # rspecインストール
   gem 'rspec-rails'
   # binstubを使う。RSpecのテストをより高速に実行する
+  # 以下を実行してbin/railsが使用できるように設定します
+  # bundle exec spring binstub rspec
   gem 'spring-commands-rspec'
+  # 他のファイルであらかじめ各クラスのインスタンスに定める値を設定しておき、各テストコードで使用します。
+  gem 'factory_bot_rails'
+  # ランダムな値を生成するgemで,メールアドレス、人名、パスワードなどのランダムな値を生成してくれます。
+  gem 'faker'
 end
 
 group :development do
